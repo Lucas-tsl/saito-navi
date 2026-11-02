@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.3
+
+- Panier flottant : le sélecteur de variation affiche le nom de chaque
+  valeur (« 100 ml ») au lieu de son identifiant (« 100-ml »).
+
 ## 0.9.2
 
 - L'engrenage n'apparaît plus que dans le pied de page : sur les pages sans

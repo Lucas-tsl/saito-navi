@@ -4,7 +4,7 @@ Tags: woocommerce, cookie consent, accessibility, sticky add to cart, stories
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires Plugins: woocommerce
@@ -174,6 +174,10 @@ exclusively.
     page.
 
 == Changelog ==
+
+= 0.9.3 =
+* Sticky add-to-cart: the variation picker shows the name of each value
+  ("100 ml") instead of its identifier ("100-ml").
 
 = 0.9.2 =
 * The gear now only appears in the footer: on pages without a cart or

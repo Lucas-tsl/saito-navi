@@ -407,13 +407,25 @@
 
          $shadeTrigger.find('.navi-sticky-shade-trigger-label').text(stickyI18n.chooseVariationText || attributeName);
 
+         // Nom affiché d'une valeur ("100 ml") : celui de l'option du vrai
+         // <select> WooCommerce, et non l'identifiant de la variation
+         // ("100-ml", slug du terme d'attribut).
+         const $attributeSelect = $variationForm.find('.variations select').first();
+         function valueLabel(value) {
+             const $option = $attributeSelect.find('option').filter(function() {
+                 return this.value === value;
+             }).first();
+             const label = $option.length ? $.trim($option.text()) : '';
+             return label || value;
+         }
+
          orderedValues.forEach(attrValue => {
              const visual = getSwatchVisual(attrValue);
              const $option = $('<li class="navi-sticky-shade-option" role="option" tabindex="-1" aria-selected="false"></li>')
                  .attr('data-value', attrValue)
                  // Nom complet en infobulle : la grille à 2 colonnes tronque
                  // les noms les plus longs (ellipsis, voir le CSS).
-                 .attr('title', attrValue);
+                 .attr('title', valueLabel(attrValue));
              $('<span class="navi-sticky-shade-option-swatch" aria-hidden="true"></span>')
                  .css({
                      'background-color': visual.color || 'transparent',
@@ -421,7 +433,7 @@
                  })
                  .toggleClass('navi-sticky-shade-swatch--empty', !visual.color && !visual.image)
                  .appendTo($option);
-             $('<span class="navi-sticky-shade-option-label"></span>').text(attrValue).appendTo($option);
+             $('<span class="navi-sticky-shade-option-label"></span>').text(valueLabel(attrValue)).appendTo($option);
              $shadeListbox.append($option);
          });
 
@@ -448,7 +460,7 @@
                      'background-image': visual.image ? `url(${visual.image})` : 'none'
                  })
                  .toggleClass('navi-sticky-shade-swatch--empty', !visual.color && !visual.image);
-             $shadeTrigger.find('.navi-sticky-shade-trigger-label').text(value || (stickyI18n.chooseVariationText || attributeName));
+             $shadeTrigger.find('.navi-sticky-shade-trigger-label').text(value ? valueLabel(value) : (stickyI18n.chooseVariationText || attributeName));
 
              // Le déclencheur (état fermé) garde volontairement son cadre
              // neutre fixe (assets/css/sticky-cart.css) : la teinte de la
