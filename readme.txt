@@ -176,6 +176,7 @@ exclusively.
 == Changelog ==
 
 = 0.9.3 =
+* The shared "Saito" menu no longer has a Tools page (custom CSS and JavaScript): WordPress.org no longer allows plugins to store arbitrary code. Custom CSS saved there is moved to the WordPress Additional CSS; saved JavaScript is shown once in an admin notice so it can be copied elsewhere.
 * Sticky add-to-cart: the variation picker shows the name of each value
   ("100 ml") instead of its identifier ("100-ml").
 

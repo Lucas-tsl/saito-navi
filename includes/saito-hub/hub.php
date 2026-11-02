@@ -5,7 +5,6 @@
  * - Saito > Tableau de bord : les plugins Saito, installés ou non.
  * - Un sous-menu par plugin, ajouté par le plugin lui-même sous
  *   saito_hub_menu_slug() (sur admin_menu, priorité par défaut).
- * - Saito > Outils : CSS et JavaScript additionnels du site.
  * - Saito > Documentation : dépôts GitHub, documentations, pages WordPress.org.
  *
  * Un plugin se déclare via le filtre saito_hub_plugins :
@@ -30,8 +29,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'SAITO_HUB_MENU', 'saito' );
-define( 'SAITO_HUB_TOOLS_PAGE', 'saito-tools' );
 define( 'SAITO_HUB_DOCS_PAGE', 'saito-docs' );
+// Anciens réglages de la page Outils (CSS et JavaScript additionnels), retirée
+// en 1.4.0 : les règles des plugins de WordPress.org n'autorisent plus
+// l'enregistrement de code libre. Lus une dernière fois pour la reprise
+// (voir saito_hub_migrate_custom_code()).
 define( 'SAITO_HUB_CSS_OPTION', 'saito_hub_custom_css' );
 define( 'SAITO_HUB_JS_OPTION', 'saito_hub_custom_js' );
 
@@ -93,6 +95,22 @@ function saito_hub_catalog() {
 			'notion'      => 'https://www.notion.so/3ff1a86510698181bb3ec3c787c94fb2',
 			'wporg'       => '',
 		),
+		'swatches'       => array(
+			'name'        => 'Saito Swatches',
+			'description' => __( 'Swatches image, couleur ou icône pour les variations WooCommerce, prix à l\'unité et badge de rupture de stock.', 'saito-navi' ),
+			'github'      => 'https://github.com/Lucas-tsl/saito-swatches',
+			'docs'        => '',
+			'notion'      => '',
+			'wporg'       => '',
+		),
+		'mini-cart'      => array(
+			'name'        => 'Saito Mini Cart',
+			'description' => __( 'Mini-panier WooCommerce : barre de livraison gratuite, produits recommandés et boutons personnalisés.', 'saito-navi' ),
+			'github'      => 'https://github.com/Lucas-tsl/saito-mini-cart',
+			'docs'        => '',
+			'notion'      => '',
+			'wporg'       => '',
+		),
 	);
 
 	$active = apply_filters( 'saito_hub_plugins', array() );
@@ -118,17 +136,16 @@ function saito_hub_register_menu() {
 
 add_action( 'admin_menu', 'saito_hub_register_menu_tail', 99 );
 /**
- * Outils et Documentation, après les sous-menus des plugins.
+ * Documentation, après les sous-menus des plugins.
  */
 function saito_hub_register_menu_tail() {
-	add_submenu_page( SAITO_HUB_MENU, __( 'Outils', 'saito-navi' ), __( 'Outils', 'saito-navi' ), 'manage_options', SAITO_HUB_TOOLS_PAGE, 'saito_hub_render_tools' );
 	add_submenu_page( SAITO_HUB_MENU, __( 'Documentation', 'saito-navi' ), __( 'Documentation', 'saito-navi' ), 'manage_options', SAITO_HUB_DOCS_PAGE, 'saito_hub_render_docs' );
 }
 
 add_action( 'admin_menu', 'saito_hub_sort_submenu', 100 );
 /**
  * Ordre du menu Saito : tableau de bord, plugins dans l'ordre du catalogue,
- * puis Outils et Documentation. Sans cela, les types de contenu (ex.
+ * puis Documentation. Sans cela, les types de contenu (ex.
  * Calendriers) passent avant les pages, ajoutées plus tard par WordPress.
  */
 function saito_hub_sort_submenu() {
@@ -143,8 +160,7 @@ function saito_hub_sort_submenu() {
 			$weights[ $slug ] = $weight++;
 		}
 	}
-	$weights[ SAITO_HUB_TOOLS_PAGE ] = 1000;
-	$weights[ SAITO_HUB_DOCS_PAGE ]  = 1001;
+	$weights[ SAITO_HUB_DOCS_PAGE ] = 1001;
 
 	$items = $submenu[ SAITO_HUB_MENU ];
 	$keys  = array_keys( $items );
@@ -172,24 +188,11 @@ add_action( 'admin_enqueue_scripts', 'saito_hub_admin_assets' );
 function saito_hub_admin_assets( $hook ) {
 	wp_add_inline_style( 'common', '#toplevel_page_saito .wp-menu-image img { padding: 6px 0 0; width: 20px; height: 20px; }' );
 
-	$pages = array( 'toplevel_page_' . SAITO_HUB_MENU, 'saito_page_' . SAITO_HUB_TOOLS_PAGE, 'saito_page_' . SAITO_HUB_DOCS_PAGE );
+	$pages = array( 'toplevel_page_' . SAITO_HUB_MENU, 'saito_page_' . SAITO_HUB_DOCS_PAGE );
 	if ( ! in_array( $hook, $pages, true ) ) {
 		return;
 	}
 	wp_enqueue_style( 'saito-hub', saito_hub_url( 'assets/hub.css' ), array(), SAITO_HUB_VERSION );
-
-	if ( 'saito_page_' . SAITO_HUB_TOOLS_PAGE === $hook ) {
-		$editors = array( 'saito-hub-css' => 'text/css' );
-		if ( current_user_can( 'unfiltered_html' ) ) {
-			$editors['saito-hub-js'] = 'text/javascript';
-		}
-		foreach ( $editors as $id => $type ) {
-			$settings = wp_enqueue_code_editor( array( 'type' => $type ) );
-			if ( false !== $settings ) {
-				wp_add_inline_script( 'code-editor', sprintf( 'jQuery(function(){ wp.codeEditor.initialize(%s, %s); });', wp_json_encode( $id ), wp_json_encode( $settings ) ) );
-			}
-		}
-	}
 }
 
 /**
@@ -249,89 +252,75 @@ function saito_hub_render_dashboard() {
 }
 
 /* -------------------------------------------------------------------------
- * Outils : CSS et JavaScript additionnels
+ * Reprise des anciens CSS et JavaScript additionnels (page Outils retirée)
  * ---------------------------------------------------------------------- */
 
-add_action( 'admin_init', 'saito_hub_register_settings' );
+add_action( 'admin_init', 'saito_hub_migrate_custom_code' );
 /**
- * Réglages de Saito > Outils.
+ * Une seule fois : le CSS additionnel de l'ancienne page Saito > Outils passe
+ * dans le CSS additionnel de WordPress (Personnaliser > CSS additionnel, ou
+ * Éditeur > Styles), qui l'affiche sur le site à sa place. Le JavaScript ne peut
+ * pas être repris automatiquement : il reste enregistré, sans plus être affiché
+ * sur le site, le temps que l'administrateur le recopie ailleurs (voir
+ * saito_hub_custom_js_notice()).
  */
-function saito_hub_register_settings() {
-	register_setting( 'saito_hub_tools', SAITO_HUB_CSS_OPTION, array( 'type' => 'string', 'sanitize_callback' => 'saito_hub_sanitize_css', 'default' => '' ) );
-	register_setting( 'saito_hub_tools', SAITO_HUB_JS_OPTION, array( 'type' => 'string', 'sanitize_callback' => 'saito_hub_sanitize_js', 'default' => '' ) );
-}
-
-/**
- * CSS additionnel : texte libre, sans balise de fermeture qui sortirait du <style>.
- *
- * @param mixed $value Valeur soumise.
- * @return string
- */
-function saito_hub_sanitize_css( $value ) {
-	return trim( str_ireplace( '</style', '', (string) $value ) );
-}
-
-/**
- * JavaScript additionnel : réservé aux utilisateurs autorisés à publier du code
- * (unfiltered_html, retiré par défaut aux administrateurs en multisite).
- *
- * @param mixed $value Valeur soumise.
- * @return string
- */
-function saito_hub_sanitize_js( $value ) {
-	if ( ! current_user_can( 'unfiltered_html' ) ) {
-		return (string) get_option( SAITO_HUB_JS_OPTION, '' );
+function saito_hub_migrate_custom_code() {
+	if ( ! current_user_can( 'edit_css' ) ) {
+		return;
 	}
-	return trim( str_ireplace( '</script', '', (string) $value ) );
+	$css = trim( (string) get_option( SAITO_HUB_CSS_OPTION, '' ) );
+	if ( '' === $css ) {
+		return;
+	}
+	$existing = (string) wp_get_custom_css();
+	$result   = wp_update_custom_css_post( trim( $existing . "\n\n/* Repris de Saito > Outils */\n" . $css ) );
+	if ( ! is_wp_error( $result ) ) {
+		delete_option( SAITO_HUB_CSS_OPTION );
+		set_transient( 'saito_hub_css_migrated', 1, DAY_IN_SECONDS );
+	}
 }
 
+add_action( 'admin_notices', 'saito_hub_custom_code_notices' );
 /**
- * Saito > Outils.
+ * Avis aux administrateurs : CSS repris dans WordPress, JavaScript à recopier.
  */
-function saito_hub_render_tools() {
-	$can_js = current_user_can( 'unfiltered_html' );
+function saito_hub_custom_code_notices() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	if ( get_transient( 'saito_hub_css_migrated' ) ) {
+		delete_transient( 'saito_hub_css_migrated' );
+		printf(
+			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+			esc_html__( 'Saito : le CSS additionnel de l\'ancienne page Saito > Outils a été déplacé dans le CSS additionnel de WordPress (Apparence > Personnaliser > CSS additionnel, ou Éditeur > Styles).', 'saito-navi' )
+		);
+	}
+	$js = trim( (string) get_option( SAITO_HUB_JS_OPTION, '' ) );
+	if ( '' === $js ) {
+		return;
+	}
+	$dismiss = wp_nonce_url( admin_url( 'admin-post.php?action=saito_hub_forget_js' ), 'saito_hub_forget_js' );
 	?>
-	<div class="wrap saito-hub">
-		<?php saito_hub_page_header( __( 'Outils', 'saito-navi' ) ); ?>
-		<?php settings_errors(); ?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'saito_hub_tools' ); ?>
-
-			<h2><label for="saito-hub-css"><?php esc_html_e( 'CSS additionnel', 'saito-navi' ); ?></label></h2>
-			<p class="description"><?php esc_html_e( 'Ajouté sur toutes les pages du site, après les styles du thème et des plugins.', 'saito-navi' ); ?></p>
-			<textarea id="saito-hub-css" name="<?php echo esc_attr( SAITO_HUB_CSS_OPTION ); ?>" rows="14" class="large-text code"><?php echo esc_textarea( (string) get_option( SAITO_HUB_CSS_OPTION, '' ) ); ?></textarea>
-
-			<h2><label for="saito-hub-js"><?php esc_html_e( 'JavaScript additionnel', 'saito-navi' ); ?></label></h2>
-			<p class="description"><?php esc_html_e( 'Ajouté en bas de toutes les pages du site. Saisissez le code seul, sans balise <script>.', 'saito-navi' ); ?></p>
-			<?php if ( ! $can_js ) : ?>
-				<p class="notice notice-warning inline"><?php esc_html_e( 'Votre compte n\'est pas autorisé à publier du code JavaScript sur ce site : ce champ est en lecture seule.', 'saito-navi' ); ?></p>
-			<?php endif; ?>
-			<textarea id="saito-hub-js" name="<?php echo esc_attr( SAITO_HUB_JS_OPTION ); ?>" rows="14" class="large-text code"<?php disabled( ! $can_js ); ?>><?php echo esc_textarea( (string) get_option( SAITO_HUB_JS_OPTION, '' ) ); ?></textarea>
-
-			<?php submit_button(); ?>
-		</form>
+	<div class="notice notice-warning">
+		<p><strong><?php esc_html_e( 'Saito : le JavaScript additionnel n\'est plus ajouté à votre site.', 'saito-navi' ); ?></strong> <?php esc_html_e( 'La page Saito > Outils a été retirée : les règles de WordPress.org n\'autorisent plus les plugins à enregistrer du code libre. Recopiez ce code là où vous gérez vos scripts (thème enfant, Google Tag Manager, extension dédiée), puis supprimez-le d\'ici.', 'saito-navi' ); ?></p>
+		<p><textarea class="large-text code" rows="6" readonly aria-label="<?php esc_attr_e( 'Ancien JavaScript additionnel', 'saito-navi' ); ?>"><?php echo esc_textarea( $js ); ?></textarea></p>
+		<p><a class="button" href="<?php echo esc_url( $dismiss ); ?>"><?php esc_html_e( 'Je l\'ai recopié : le supprimer', 'saito-navi' ); ?></a></p>
 	</div>
 	<?php
 }
 
-add_action( 'wp_enqueue_scripts', 'saito_hub_enqueue_custom_code', 100 );
+add_action( 'admin_post_saito_hub_forget_js', 'saito_hub_forget_js' );
 /**
- * Sortie du CSS et du JavaScript additionnels sur le site.
+ * Supprime l'ancien JavaScript additionnel, une fois recopié ailleurs.
  */
-function saito_hub_enqueue_custom_code() {
-	$css = (string) get_option( SAITO_HUB_CSS_OPTION, '' );
-	if ( '' !== $css ) {
-		wp_register_style( 'saito-hub-custom', false, array(), SAITO_HUB_VERSION );
-		wp_enqueue_style( 'saito-hub-custom' );
-		wp_add_inline_style( 'saito-hub-custom', $css );
+function saito_hub_forget_js() {
+	check_admin_referer( 'saito_hub_forget_js' );
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'Action non autorisée.', 'saito-navi' ) );
 	}
-
-	$js = (string) get_option( SAITO_HUB_JS_OPTION, '' );
-	if ( '' !== $js ) {
-		wp_register_script( 'saito-hub-custom', false, array(), SAITO_HUB_VERSION, true );
-		wp_enqueue_script( 'saito-hub-custom' );
-		wp_add_inline_script( 'saito-hub-custom', $js );
-	}
+	delete_option( SAITO_HUB_JS_OPTION );
+	wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url() );
+	exit;
 }
 
 /* -------------------------------------------------------------------------

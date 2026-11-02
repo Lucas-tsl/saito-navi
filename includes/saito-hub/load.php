@@ -52,7 +52,7 @@ if ( ! function_exists( 'saito_hub_register_version' ) ) {
 	add_action( 'plugins_loaded', 'saito_hub_boot', 1 );
 }
 
-saito_hub_register_version( '1.1.0', __DIR__ );
+saito_hub_register_version( '1.4.0', __DIR__ );
 
 // Plugin activé pendant la requête (écran Extensions, WP-CLI) : son fichier
 // est chargé après plugins_loaded, le hub doit démarrer tout de suite.
