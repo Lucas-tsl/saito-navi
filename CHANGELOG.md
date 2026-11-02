@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.3
+
+- Menu Saito commun : la page Outils (CSS et JavaScript additionnels) est retirée, WordPress.org n'autorisant plus les plugins à enregistrer du code libre. Le CSS déjà saisi passe dans le CSS additionnel de WordPress ; le JavaScript est affiché une dernière fois dans un avis de l'admin pour être recopié ailleurs.
+- Panier flottant : le sélecteur de variation affiche le nom de chaque
+  valeur (« 100 ml ») au lieu de son identifiant (« 100-ml »).
+
 ## 0.9.2
 
 - L'engrenage n'apparaît plus que dans le pied de page : sur les pages sans
