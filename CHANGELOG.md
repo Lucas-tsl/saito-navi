@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.9.3
+
+- **Bannière cookies aux boutons inertes** chez les visiteurs équipés d'un
+  bloqueur de bannières (constaté sur Mac avec NordVPN Threat Protection,
+  Chrome et Safari : `cookie-consent.js` renvoyé vide en 204). Script et
+  feuille de style renommés avec des noms neutres (`assets/js/navi-prefs.js`,
+  `assets/css/navi-prefs.css`, handles `navi-prefs-js` / `navi-prefs-css`).
+- La bannière n'est plus affichée par un style inline calculé en PHP mais
+  par `navi-prefs.js` lui-même (cachée par défaut en CSS) : bloquée malgré
+  tout, elle reste cachée au lieu d'être inutilisable, et son état reste
+  juste même avec un cache de page.
+- **Consent Mode V2 par défaut imprimé en ligne dans le `<head>`**
+  (`wp_add_inline_script`) au lieu de `assets/js/cookie-consent-mode.js` :
+  un bloqueur ne peut plus empêcher le « denied » par défaut, qui laissait
+  sinon les balises Google se déclencher sans consentement.
+- `gtag` exposé globalement par le script Consent Mode : sur un site GTM
+  sans gtag.js, la mise à jour du consentement n'était jamais envoyée à
+  Google avant la page suivante (`gtag` restait local au script).
+- Démarrage robuste (même après `DOMContentLoaded`), clics délégués sur
+  `document`, erreurs `gtag`/`dataLayer` isolées.
+
 ## 0.9.2
 
 - L'engrenage n'apparaît plus que dans le pied de page : sur les pages sans

@@ -8,6 +8,9 @@
 }
 
 .navi-cookie-banner {
+    /* Cachée par défaut : c'est assets/js/navi-prefs.js qui la révèle si
+       besoin (voir includes/modules/cookie-consent/public-display.php). */
+    display: none;
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -176,7 +179,7 @@
     }
 }
 
-/* Confirmation brève après un choix enregistré (assets/js/cookie-consent.js,
+/* Confirmation brève après un choix enregistré (assets/js/navi-prefs.js,
    showSavedToast). */
 .navi-cookie-toast {
     position: fixed;

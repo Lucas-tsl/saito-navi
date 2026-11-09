@@ -20,7 +20,7 @@
 }
 
 /* Panneau Accessibilité, ancré au bouton engrenage (même position que le
-   panneau cookies : assets/css/cookie-consent.css). */
+   panneau cookies : assets/css/navi-prefs.css). */
 .navi-a11y-panel,
 .navi-a11y-panel *,
 .navi-a11y-panel *::before,
@@ -95,7 +95,7 @@
 }
 
 /* Police héritée du thème hôte (inherit), comme les titres/boutons du
-   panneau cookies (assets/css/cookie-consent.css) — les panneaux doivent se
+   panneau cookies (assets/css/navi-prefs.css) — les panneaux doivent se
    lire comme un seul système, cohérent avec n'importe quel site. */
 .navi-a11y-title {
     margin: 0 0 14px;

@@ -167,7 +167,7 @@
    règles génériques à ce type de conteneur (display:block...) avec une
    spécificité ou un ordre de chargement qui prend le pas sur les nôtres —
    même raison que le !important déjà posé sur les cases à cocher,
-   assets/css/cookie-consent.css. */
+   assets/css/navi-prefs.css. */
 .navi-sticky-variation-buttons {
     display: flex !important;
     flex-direction: row !important;

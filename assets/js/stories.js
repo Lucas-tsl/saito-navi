@@ -356,7 +356,7 @@
 
         // Focus déplacé vers la croix de fermeture, restauré sur l'élément
         // d'origine (la bulle cliquée) à la fermeture — même patron que
-        // openModal()/closeModal() dans cookie-consent.js.
+        // openModal()/closeModal() dans navi-prefs.js.
         lastFocusedBeforeFullscreen = document.activeElement;
         if (fullscreenCloseBtn) fullscreenCloseBtn.focus();
 
