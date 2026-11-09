@@ -4,7 +4,7 @@ Tags: woocommerce, cookie consent, accessibility, sticky add to cart, stories
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires Plugins: woocommerce
@@ -175,6 +175,21 @@ exclusively.
 
 == Changelog ==
 
+= 0.9.3 =
+* Cookie banner: works when a cookie-banner blocker is active (NordVPN
+  Threat Protection, AdGuard, uBlock/Brave "Annoyances" lists...). The
+  script and stylesheet now have neutral file names; previously a blocked
+  script left the banner visible with buttons that did nothing.
+* The banner is now shown by its own script: if a blocker still removes
+  it, the banner stays hidden instead of being unusable.
+* Google Consent Mode V2 defaults are now printed inline in the page head
+  instead of a separate file, so a blocker can no longer prevent the
+  "denied" default from being set.
+* The banner state is read from the visitor's cookie in the browser,
+  so it stays correct when pages are served from a page cache.
+* Consent choices are now sent to Google immediately on sites using
+  Google Tag Manager without gtag.js (gtag is exposed globally).
+
 = 0.9.2 =
 * The gear now only appears in the footer: on pages without a cart or
   calendar icon, the floating button stays hidden until the footer is in
@@ -288,6 +303,9 @@ exclusively.
   Accessibility modules.
 
 == Upgrade Notice ==
+
+= 0.9.3 =
+Fixes the cookie banner when visitors use a cookie-banner blocker, and keeps Consent Mode defaults set in that case.
 
 = 0.9.2 =
 The floating button is hidden outside the footer on pages without a cart or calendar icon.

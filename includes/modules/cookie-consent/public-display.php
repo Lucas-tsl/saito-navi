@@ -13,15 +13,52 @@ function navi_cookie_cookie_value( $nom ) {
 // script tôt dans le <head>) : enqueue en priorité 1 sur wp_enqueue_scripts
 // avec in_footer=false, pour être imprimé avant tout hook wp_head par
 // défaut (priorité 10), là où un snippet GTM classique s'injecte.
+//
+// Code imprimé EN LIGNE (handle sans fichier + wp_add_inline_script), et non
+// plus chargé depuis assets/js/cookie-consent-mode.js : les bloqueurs de
+// bannières cookies (NordVPN Threat Protection, AdGuard, listes "Annoyances"
+// d'uBlock/Brave...) bloquent les scripts d'après leur URL. Bloqué, ce
+// fichier ne posait jamais le "denied" par défaut, et les balises Google
+// pouvaient alors se déclencher sans consentement. Un script en ligne ne
+// peut pas être bloqué de cette façon.
 add_action( 'wp_enqueue_scripts', 'navi_cookie_enqueue_consent_mode', 1 );
 function navi_cookie_enqueue_consent_mode() {
-    wp_register_script( 'navi-cookie-consent-mode', NAVI_PLUGIN_URL . 'assets/js/cookie-consent-mode.js', array(), NAVI_VERSION, false );
-    wp_localize_script(
-        'navi-cookie-consent-mode',
-        'naviConsentModeData',
-        array( 'version' => NAVI_COOKIE_CONSENT_VERSION )
+    wp_register_script( 'navi-gcm', false, array(), NAVI_VERSION, false );
+    wp_enqueue_script( 'navi-gcm' );
+    wp_add_inline_script( 'navi-gcm', navi_cookie_consent_mode_js() );
+}
+
+// Consent Mode V2 par défaut, lu dans le cookie du visiteur au moment de
+// l'exécution (fiable même si la page HTML est en cache).
+function navi_cookie_consent_mode_js() {
+    $version = wp_json_encode( (string) NAVI_COOKIE_CONSENT_VERSION );
+    return implode(
+        "\n",
+        array(
+            '(function () {',
+            '    window.dataLayer = window.dataLayer || [];',
+            '    function gtag() { window.dataLayer.push(arguments); }',
+            // gtag exposé globalement (comme le snippet Google officiel) : sans
+            // cela, sur un site GTM sans gtag.js, navi-prefs.js ne trouvait
+            // pas gtag et la mise à jour du consentement n'était jamais
+            // envoyée avant la page suivante.
+            '    window.gtag = window.gtag || gtag;',
+            '    var v = document.cookie.match(/(?:^|; )navi_consent_version=([^;]*)/);',
+            "    var has = document.cookie.indexOf('navi_consent_all=') !== -1 && v !== null && v[1] === " . $version . ';',
+            "    var stats = document.cookie.indexOf('navi_consent_stats=1') !== -1 ? 'granted' : 'denied';",
+            "    var mkt = document.cookie.indexOf('navi_consent_mkt=1') !== -1 ? 'granted' : 'denied';",
+            "    gtag('consent', 'default', {",
+            "        'ad_storage': has ? mkt : 'denied',",
+            "        'ad_user_data': has ? mkt : 'denied',",
+            "        'ad_personalization': has ? mkt : 'denied',",
+            "        'analytics_storage': has ? stats : 'denied',",
+            // Le délai n'a d'utilité que le temps de laisser un nouveau
+            // visiteur répondre à la bannière.
+            "        'wait_for_update': has ? 0 : 500",
+            '    });',
+            '})();',
+        )
     );
-    wp_enqueue_script( 'navi-cookie-consent-mode' );
 }
 
 // Lien de gestion des cookies utilisable n'importe où (typiquement le footer
@@ -43,19 +80,24 @@ function navi_cookie_preferences_link_shortcode( $atts ) {
 // Affichage HTML de la bannière et de la modale de préférences.
 // Le bouton de réouverture après consentement est désormais le bouton
 // flottant central du hub (icône 🍪 dans includes/core/frontend.php),
-// qui déclenche l'événement 'navi:action' écouté dans assets/js/cookie-consent.js.
+// qui déclenche l'événement 'navi:action' écouté dans assets/js/navi-prefs.js.
 add_action( 'wp_footer', 'navi_cookie_afficher_banniere' );
 function navi_cookie_afficher_banniere() {
     $logo          = navi_cookie_logo_url();
     $texte         = get_option( 'navi_cookie_texte_banniere', navi_cookie_texte_par_defaut() );
     $url_politique = get_option( 'navi_cookie_url_politique', '#' );
     $url_mentions  = get_option( 'navi_cookie_url_mentions', '#' );
-
-    $choix_fait = null !== navi_cookie_cookie_value( 'navi_consent_all' )
-        && navi_cookie_cookie_value( 'navi_consent_version' ) === NAVI_COOKIE_CONSENT_VERSION;
     ?>
 
-    <div id="navi-cookie-banner" class="navi-cookie-banner" role="region" aria-labelledby="navi-cookie-banner-title" style="display: <?php echo $choix_fait ? 'none' : 'block'; ?>;">
+    <?php /* Cachée par défaut en CSS (assets/css/navi-prefs.css) et révélée
+             par assets/js/navi-prefs.js si le visiteur n'a pas encore fait
+             de choix — lecture du cookie dans le navigateur, fiable même si
+             la page HTML est en cache, contrairement à l'ancien style inline
+             calculé ici en PHP. Ce script étant imprimé dans le footer APRÈS
+             ce HTML, il tranche avant le premier rendu : pas de flash. Si un
+             bloqueur l'empêche de se charger, la bannière reste cachée au
+             lieu de s'afficher avec des boutons inertes. */ ?>
+    <div id="navi-cookie-banner" class="navi-cookie-banner" role="region" aria-labelledby="navi-cookie-banner-title">
         <?php if ( ! empty( $logo ) ) : ?><img src="<?php echo esc_url( $logo ); ?>" alt="<?php esc_attr_e( 'Logo', 'saito-navi' ); ?>" class="navi-cookie-logo" /><?php endif; ?>
         <h3 class="navi-cookie-title" id="navi-cookie-banner-title"><?php esc_html_e( 'Gérer le consentement', 'saito-navi' ); ?></h3>
         <p class="navi-cookie-desc"><?php echo nl2br( esc_html( $texte ) ); ?></p>

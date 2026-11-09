@@ -25,7 +25,6 @@ module.exports = [
         naviConfig: "readonly",
         naviStoriesSettingsData: "readonly",
         naviStoryAdminData: "readonly",
-        naviConsentModeData: "readonly",
         dataLayer: "writable",
         wp: "readonly",
         CSS: "readonly",

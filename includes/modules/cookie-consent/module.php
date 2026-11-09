@@ -81,10 +81,14 @@ if ( Navi_Module_Registry::is_active( 'cookie-consent' ) ) {
     function navi_cookie_enqueue_assets() {
         // Le bouton du hub et la modale de préférences restent disponibles
         // après consentement : CSS et JS sont donc toujours nécessaires.
-        navi_enqueue_style( 'navi-cookie-css', NAVI_PLUGIN_URL . 'assets/css/cookie-consent.css', array(), NAVI_VERSION );
-        navi_enqueue_script( 'navi-cookie-js', NAVI_PLUGIN_URL . 'assets/js/cookie-consent.js', array(), NAVI_VERSION, true );
+        // Noms de fichiers et handles volontairement neutres (sans "cookie" ni
+        // "consent") : les bloqueurs de bannières cookies bloquent les
+        // ressources d'après leur URL. Bloqué, l'ancien cookie-consent.js
+        // laissait une bannière affichée aux boutons inertes.
+        navi_enqueue_style( 'navi-prefs-css', NAVI_PLUGIN_URL . 'assets/css/navi-prefs.css', array(), NAVI_VERSION );
+        navi_enqueue_script( 'navi-prefs-js', NAVI_PLUGIN_URL . 'assets/js/navi-prefs.js', array(), NAVI_VERSION, true );
         wp_localize_script(
-            'navi-cookie-js',
+            'navi-prefs-js',
             'naviCookieConfig',
             array(
                 'consentVersion' => NAVI_COOKIE_CONSENT_VERSION,

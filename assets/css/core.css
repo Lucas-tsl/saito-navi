@@ -18,7 +18,7 @@
    (triplets R,G,B) sont nécessaires à côté des hex : les usages en
    rgba(..., alpha) ci-dessous ne peuvent pas convertir un hex eux-mêmes. Ce
    fichier charge sur toutes les pages (includes/core/frontend.php), donc ces
-   variables sont toujours définies avant que cookie-consent.css/
+   variables sont toujours définies avant que navi-prefs.css/
    accessibility.css ne les utilisent. */
 :root {
     --navi-color-ink: #1a1a1a;
@@ -553,7 +553,7 @@
 }
 
 /* Focus clavier visible, cohérent avec le contenu des modules (assets/css/*-cart.css,
-   cookie-consent.css, accessibility.css) : couleur unique repérable sur
+   navi-prefs.css, accessibility.css) : couleur unique repérable sur
    fond clair comme sur fond sombre. */
 .navi-fab-toggle:focus-visible,
 .navi-fab-item:focus-visible,
